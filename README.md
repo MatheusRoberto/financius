@@ -12,6 +12,25 @@ OR
 yarn install
 ```
 
+### Configuration DB
+```bash
+cp .env.example .env
+```
+
+Gere uma nova key
+```bash
+adonis key:generate
+```
+
+Altere Arquivo .env
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_USER=root
+    DB_PASSWORD=sua senha
+    DB_DATABASE=financius
+    HASH_DRIVER=bcrypt
+
 
 ### Migrations
 
@@ -26,6 +45,10 @@ CREATE DATABASE IF NOT EXISTS financius
 adonis migration:run
 ```
 
+### Run Serve Developer
+```js
+adonis serve --dev
+```
 
 ## Routes
 
