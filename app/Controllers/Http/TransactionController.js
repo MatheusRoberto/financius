@@ -188,13 +188,37 @@ class TransactionController {
 
   async listDate({
     auth,
-    request
+    request,
+    response
   }) {
-    const user = await auth.getUser();
+    await auth.getUser();
     const {
       init,
       finished
     } = request.all();
+
+    if (init === undefined || finished === undefined) {
+      return response
+        .status(400)
+        .send({
+          message: {
+            error: 'Data inicial e/ou Data final são campos obrigatórios!'
+          }
+        });
+    }
+
+    const inicial = moment(init, 'YYYY-MM-DD');
+    const final = moment(finished, 'YYYY-MM-DD');
+
+    if (!final.isAfter(inicial) && !final.isSame(inicial)) {
+      return response
+        .status(400)
+        .send({
+          message: {
+            error: 'Data inicial precisa ser anterior a Data final!'
+          }
+        });
+    }
 
     return await Transaction.query().where({
         'active': true

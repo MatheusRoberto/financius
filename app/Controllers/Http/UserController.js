@@ -22,7 +22,7 @@ class UserController {
             message: {
               error: 'nome, email e/ou senha são campos obrigatórios!'
             }
-          })
+          });
       }
 
       const userExists = await User.findBy('email', email);

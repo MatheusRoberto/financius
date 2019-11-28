@@ -16,6 +16,13 @@
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
 
+Route.get('/', ({ response }) => {
+    response.status(200).send({
+        name: 'Api Financius',
+        author: 'Matheus Ap. S. Roberto'
+    });
+});
+
 // User e Login
 Route.post('/users', 'UserController.create')
 Route.post('/sessions', 'SessionController.create')
