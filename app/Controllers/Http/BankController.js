@@ -45,7 +45,7 @@ class BankController {
       document
     } = request.only(['code', 'name', 'document']);
 
-    if (name === undefined || code === undefined ) {
+    if (name === undefined || code === undefined) {
       return response
         .status(400)
         .send({
@@ -91,6 +91,7 @@ class BankController {
   async update({
     params,
     request,
+    response
   }) {
     const {
       id
@@ -103,11 +104,27 @@ class BankController {
 
     const bank = result.rows[0];
 
-    bank.merge(request.only([
-      'name',
-      'document',
-      'code',
-    ]));
+    if (bank === undefined) {
+      return response
+        .status(404)
+        .send({
+          error: "O recurso não existe"
+        });
+    }
+
+    const {
+      name,
+      document,
+      code
+    } = request.only(['name', 'document', 'code']);
+
+    const fields = {};
+
+    fields.name = name !== null && name !== undefined ? name : bank.name;
+    fields.document = document !== null && document !== undefined ? document : bank.document;
+    fields.code = code !== null && code !== undefined ? code : bank.code;
+
+    bank.merge(fields);
 
     await bank.save();
     return bank;

@@ -53,13 +53,26 @@ class CategoryController {
     const {
       id
     } = params;
-    const result = await Category.query().where({'id': id, 'active': true}).fetch();
+    const result = await Category.query().where({
+      'id': id,
+      'active': true
+    }).fetch();
 
     const category = result.rows[0];
 
     AuthorizationService.verifyPermission(category, user);
 
-    category.merge(request.only(['name', 'type']));
+    const {
+      name,
+      type
+    } = request.only(['name', 'type']);
+
+    const fields = {};
+
+    fields.name = name !== null && name !== undefined ? name : category.name;
+    fields.type = type !== null && type !== undefined ? type : category.type;
+
+    category.merge(fields);
     await category.save();
 
     return category;
@@ -72,7 +85,10 @@ class CategoryController {
   }) {
     const user = await auth.getUser();
 
-    const result = await Category.query().where({'id': params.id, 'active': true}).fetch();
+    let result = await Category.query().where({
+      'id': params.id,
+      'active': true
+    }).fetch();
 
     const category = result.rows[0];
 
@@ -82,7 +98,7 @@ class CategoryController {
       active: false
     });
 
-    const result = await category.flows().fetch();
+    result = await category.flows().fetch();
     for (let index = 0; index < result.rows.length; index++) {
       const element = result.rows[index];
 

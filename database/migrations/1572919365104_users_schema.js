@@ -6,7 +6,7 @@ const Schema = use('Schema')
 class UsersSchema extends Schema {
   up () {
     this.table('users', (table) => {
-      table.string('username', 254).notNullable().unique()
+      table.dropColumn('username')
     })
   }
 

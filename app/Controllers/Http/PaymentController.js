@@ -102,6 +102,14 @@ class PaymentController {
               error: 'numero cartão, bandeira e/ou tipo são campos obrigatórios!'
             }
           });
+      } else if (paymentInfo.type === 'credit' && paymentInfo.limit === undefined) {
+        return response
+          .status(400)
+          .send({
+            message: {
+              error: 'numero cartão, bandeira, tipo e/ou limite são campos obrigatórios!'
+            }
+          });
       }
       delete paymentInfo.agency;
       delete paymentInfo.account;
@@ -141,12 +149,26 @@ class PaymentController {
     if (payment.card_id !== null) {
       const card = await Card.find(payment.card_id);
       pay = card;
-      card.merge(request.only([
-        'number',
+
+      const {
+        number,
+        flag,
+        type,
+        limit
+      } = request.only(['number',
         'flag',
         'type',
         'limit'
-      ]));
+      ]);
+
+      const fields = {};
+
+      fields.number = number !== null && number !== undefined ? number : card.number;
+      fields.flag = flag !== null && flag !== undefined ? flag : card.flag;
+      fields.type = type !== null && type !== undefined ? type : card.type;
+      fields.limit = limit !== null && limit !== undefined ? limit : card.limit;
+
+      card.merge(fields);
       await card.save();
     } else {
       const accoun = await Account.find(payment.account_id);
@@ -193,6 +215,12 @@ class PaymentController {
     const payment = result.rows[0];
 
     AuthorizationService.verifyPermission(payment, user);
+
+    payment.merge({
+      active: false
+    });
+
+    await payment.save();
 
     if (payment.card_id !== null) {
       const card = await Card.find(payment.card_id);

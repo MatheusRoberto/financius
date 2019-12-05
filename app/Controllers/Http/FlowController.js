@@ -52,7 +52,8 @@ class FlowController {
   async store({
     request,
     params,
-    auth
+    auth,
+    response
   }) {
     const user = await auth.getUser();
     const {
@@ -74,12 +75,12 @@ class FlowController {
       complete === undefined ||
       !Number.isInteger(payment_id) ||
       !Number.isInteger(repeat) ||
-      typeof (value) === 'number') {
+      !typeof (value) === 'number') {
       return response
         .status(400)
         .send({
           message: {
-            error: 'Nome, Operação, Dia, completado, id da forma Pagamento, Quantidade de Repetição e/ou Valor da Conta são campos obrigatórios!'
+            error: 'Nome, Operação, Dia, completado, id da forma Pagamento, Quantidade de Repetição e/ou Valor do fluxo são campos obrigatórios!'
           }
         });
     }
@@ -113,6 +114,7 @@ class FlowController {
       for (let i = 0; i < repeat; i++) {
         const t = new Transaction();
         t.fill({
+          name,
           operation,
           day: d.format('YYYY-MM-DD'),
           complete: moment().isAfter(d),
@@ -125,6 +127,7 @@ class FlowController {
       }
     } else {
       transaction.fill({
+        name,
         operation,
         day,
         complete,
@@ -171,11 +174,9 @@ class FlowController {
     }).fetch();
 
     const flow = result.rows[0];
-    let category;
+    let category = undefined;
     if (flow !== undefined) {
       category = await flow.category().fetch();
-    } else {
-      category = new Category();
     }
 
     AuthorizationService.verifyPermission(category, user);
@@ -188,7 +189,7 @@ class FlowController {
 
     for (let index = 0; index < transactions.rows.length; index++) {
       const element = transactions.rows[index];
-      
+
       element.merge({
         active: false,
       });
@@ -224,7 +225,8 @@ class FlowController {
 
   async listFlow({
     auth,
-    params
+    params,
+    response
   }) {
     const user = await auth.getUser();
     const {
@@ -237,6 +239,14 @@ class FlowController {
     }).fetch();
 
     const flow = result.rows[0];
+
+    if (flow === undefined) {
+      return response
+        .status(404)
+        .send({
+          error: "O recurso não existe"
+        });
+    }
 
     result = await Category.query().where({
       'id': flow.category_id,

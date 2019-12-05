@@ -5,7 +5,6 @@ const Schema = use('Schema')
 
 class PaymentSchema extends Schema {
   up() {
-    this.drop('payments')
     this.create('payments', (table) => {
       table.increments()
       table
